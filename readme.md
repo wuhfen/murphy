@@ -52,4 +52,11 @@ Merge made by the 'recursive' strategy.
 ~~~
 
 > --no-ff 参数是不使用frist-forward模式合并分支，保留合并记录。
+>
+> --pretty=oneline 
+
+~~~bash
+git log --graph --pretty=oneline --abbrev-commit
+git merge --no-ff -m "merge with no-ff" dev  这样合并可以查看分支合并的日志
+~~~
 
