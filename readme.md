@@ -16,6 +16,7 @@ git reflog
 git diff file
 git reset --hard HEAD^
 git remote add origin git@github.com:michaelliao/learngit.git
-git clone https://murphy.git
+git clone git@https://murphy.git
+git push origin master
 ~~~
 
