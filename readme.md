@@ -51,5 +51,5 @@ Merge made by the 'recursive' strategy.
  1 file changed, 1 insertion(+)
 ~~~
 
-
+> --no-ff 参数是不使用frist-forward模式合并分支，保留合并记录。
 
