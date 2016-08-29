@@ -34,3 +34,22 @@ git push -u origin master第一次推送master分支的所有内容
 > 合并某分支到当前分支：`git merge `
 >
 > 删除分支：`git branch -d `
+
+~~~bash
+git branch dev
+git checkout dev
+$ git checkout master
+Switched to branch 'master'
+git merge dev
+$ git add readme.txt 
+$ git commit -m "add merge"
+[dev 6224937] add merge
+ 1 file changed, 1 insertion(+)
+$ git merge --no-ff -m "merge with no-ff" dev
+Merge made by the 'recursive' strategy.
+ readme.txt |    1 +
+ 1 file changed, 1 insertion(+)
+~~~
+
+
+
