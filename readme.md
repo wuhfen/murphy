@@ -68,3 +68,15 @@ git stash apply stash@{0} 提取指定现场
 
 先将dev保存现场，然后切回master分支，创建bug分支，修复bug合并分支，然后切回dev分支，提取现场。
 
+~~~bash
+git stash list
+git stash apply stash@{0}
+git stash drop stash@{0}
+git stash pop
+git stash
+git checkout dev
+git merge --no-ff -m "merged bug fix issue-101" issue-101
+~~~
+
+
+
