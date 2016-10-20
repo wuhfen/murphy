@@ -1,0 +1,57 @@
+{% extends "default/base.html" %}
+{% block title %}业务{% endblock %}
+
+{% block assistant-header %}
+    <h1> 业务 <small>project</small></h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="#">business</a></li>
+        <li class="active"><a href="/business/business_list/">business_list</a></li>
+      </ol>
+{% endblock %}
+
+{% block content %}
+<div class="box">
+        <div class="box-header with-border">
+        <h4 class="text-primary">业务列表</h4>
+        <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse">
+              <i class="fa fa-minus"></i></button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <tr>
+                        <th>业务名称</th>
+                        <th>代号</th>
+                        <th>平台类型</th>
+                        <th>建站时间</th>
+                        <th>负责人</th>
+                        <th>我司专员</th>
+                        <th>操作</th>
+
+
+                    </tr>
+                {% for v in business_data %}
+                    <tr>
+                        <td>{{ v.name }}</td>
+                        <td>{{ v.nic_name }}</td>
+                        <td>{{ v.site_type }}</td>
+                        <td>{{ v.created_site_date }}</td>
+                        <td>{{ v.functionary }}</td>
+                        <td>{{ v.ds_contact }}</td>
+                        <td>
+                            <a href="{% url 'project_edit' v.uuid %}" class="btn btn-xs btn-primary project-edit">修改</a>
+                            <a href="{% url 'project_delete' v.uuid %}" class="btn btn-xs btn-primary project-delete">删除</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </table>
+            </div>
+        </div>
+</div>
+{% endblock %}
