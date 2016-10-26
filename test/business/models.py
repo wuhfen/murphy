@@ -5,46 +5,65 @@ from __future__ import unicode_literals
 from django.db import models 
 from accounts.models import CustomUser as User
 from assets.models import Server
-from uuidfield import UUIDField
+import uuid
 import datetime
 
 
+class Platform(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=64, verbose_name=u"名称")
+    status = models.BooleanField(default=True,verbose_name=u"平台状态")
+
+    front_station = models.ManyToManyField(Server, blank=True, related_name=u"front_station", verbose_name=u"前端源站")
+    front_proxy = models.ManyToManyField(Server, blank=True, related_name=u"front_proxy", verbose_name=u"前端代理")
+    front_image_site = models.ManyToManyField(Server, blank=True,related_name=u"front_image_site", verbose_name=u"前端图片站")
+    front_download_site = models.ManyToManyField(Server, blank=True,related_name=u"front_download_site", verbose_name=u"前端下载站")
+    front_active_site = models.ManyToManyField(Server, blank=True,related_name=u"front_active_site", verbose_name=u"前端动态资源处理站")
+    front_active_cache = models.ManyToManyField(Server, blank=True,related_name=u"front_active_cache", verbose_name=u"前端动态资源缓存站")
+    front_db_site = models.CharField(max_length=128,blank=True, verbose_name=u"前端数据库接口")
+    front_cdn = models.CharField(max_length=100,blank=True, verbose_name=u"前端cdn")
+    front_high_protection = models.CharField(max_length=100,blank=True, verbose_name=u"前端高防")
+
+    backend_station = models.ManyToManyField(Server, blank=True, related_name=u"backend_station", verbose_name=u"后台源站")
+    backend_proxy = models.ManyToManyField(Server, blank=True, related_name=u"backend_proxy", verbose_name=u"后台代理")
+    backend_image_site = models.ManyToManyField(Server, blank=True,related_name=u"backend_image_site", verbose_name=u"后台图片站")
+    backend_active_site = models.ManyToManyField(Server, blank=True,related_name=u"backend_active_site", verbose_name=u"后台动态资源处理站")
+    backend_db_site = models.CharField(max_length=128,blank=True, verbose_name=u"后台数据库接口")
+
+
+    description = models.TextField(blank=True, null=True, verbose_name=u'介绍')
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(blank=True,null=True, auto_now=True)
+    class Meta:
+        verbose_name = u'业务Platform'
+        verbose_name_plural = verbose_name
+    def __unicode__(self):
+        return self.name
+
 class Business(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
-    full_name = models.CharField(max_length=128, verbose_name=u"全名")
-    name = models.CharField(max_length=64, blank=True, null=True,verbose_name=u"简称")
-    nic_name = models.CharField(max_length=64, verbose_name=u"代号")
-    SITE_TYPE_CHOICES = (
-    ('old_site', u"老平台"),
-    ('new_site', u"新平台"),
-    )
-    site_type = models.CharField(max_length=64,choices=SITE_TYPE_CHOICES, verbose_name=u"站点类型")
-    created_site_date = models.DateTimeField(blank=True, auto_now=True,verbose_name=u"建站时间")
-    functionary = models.ForeignKey(User, related_name=u"functionary",blank=True, null=True, verbose_name=u"负责人", )
-    ds_contact = models.ForeignKey(User, related_name=u"ds_contact",blank=True, null=True, verbose_name=u"我司专员", )
-    agent_contact = models.CharField(max_length=100,blank=True, null=True, verbose_name=u"客户联系人")
-    agent_contact = models.CharField(max_length=100,blank=True, null=True, verbose_name=u"客户联系方式")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    full_name = models.CharField(max_length=128,blank=True, verbose_name=u"业务全名")
+    name = models.CharField(max_length=64, blank=True,verbose_name=u"业务简称")
+    nic_name = models.CharField(max_length=64,blank=True, verbose_name=u"发布代号")
+    nginx_conf_name = models.CharField(max_length=64,blank=True, verbose_name=u"web配置文件")
+    nginx_conf_dir = models.CharField(max_length=64,blank=True, verbose_name=u"web配置文件路径")
+    platform = models.ForeignKey(Platform,blank=True,null=True,on_delete=models.SET_NULL, verbose_name=u"平台")
+    initsite_data = models.CharField(max_length=64,blank=True,verbose_name=u"建站时间")
+    functionary = models.ForeignKey(User, related_name=u"functionary",blank=True, null=True,on_delete=models.SET_NULL, verbose_name=u"我司负责人", )
+    ds_contact = models.ForeignKey(User, related_name=u"ds_contact",blank=True, null=True,on_delete=models.SET_NULL, verbose_name=u"我司专员", )
+    agent_contact = models.CharField(max_length=100,blank=True, verbose_name=u"客户名")
+    agent_contact_method = models.CharField(max_length=100,blank=True, verbose_name=u"客户电话")
+    other_contact_method = models.CharField(max_length=100,blank=True, verbose_name=u"联系方式")
     SITE_STATUS_CHOICES = (
     ('0', u"正常运转"),
     ('1', u"维护升级"),
     ('2', u"迁移过渡"),
     ('3', u"停止运转"),
     )
-    status = models.CharField(max_length=100,choices=SITE_STATUS_CHOICES,verbose_name=u"站点状态")
-    status_update_date = models.DateTimeField(blank=True, auto_now=True, verbose_name=u"客户状态变更日期")
+    status = models.CharField(max_length=100,blank=True,choices=SITE_STATUS_CHOICES,verbose_name=u"业务状态")
+    status_update_date = models.CharField(max_length=64,blank=True,verbose_name=u"状态变更时间")
 
-    front_proxy = models.ManyToManyField(Server, blank=True, related_name=u"front_proxy", verbose_name=u"前端代理")
-    front_urls = models.CharField(max_length=100,blank=True, null=True, verbose_name=u"前端域名")
-    front_drop_list = models.CharField(max_length=600,blank=True, null=True, verbose_name=u"前端黑名单")
-    front_image_site = models.ManyToManyField(Server, blank=True,related_name=u"front_image_site", verbose_name=u"前端图片站")
-    front_cdn = models.CharField(max_length=100,blank=True, null=True, verbose_name=u"前端cdn")
-    front_high_protection = models.CharField(max_length=100,blank=True, null=True, verbose_name=u"前端高防")
-
-    backend_proxy = models.ManyToManyField(Server, blank=True, related_name=u"backend_proxy",verbose_name=u"后台代理")
-    backend_urls = models.CharField(max_length=300,blank=True, null=True, verbose_name=u"后台域名")
-    backend_allow_list = models.CharField(max_length=100,blank=True, null=True, verbose_name=u"后台白名单")
-    backend_image_site = models.ManyToManyField(Server, blank=True, related_name=u"backend_image_site", verbose_name=u"后台图片站")
-
+    description = models.TextField(blank=True, null=True, verbose_name=u'业务介绍')
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(blank=True, auto_now=True)
     class Meta:
@@ -53,8 +72,46 @@ class Business(models.Model):
     def __unicode__(self):
         return self.name
 
+
+
+
+
+class DomainName(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=64, verbose_name=u"域名")
+    DOMAIN_USE_CHOICES = (
+    ('0', u"前端域名"),
+    ('1', u"接口域名"),
+    ('2', u"后台域名"),
+    )
+    use = models.CharField(max_length=64,blank=True, verbose_name=u"用途",choices=DOMAIN_USE_CHOICES)
+    business = models.ForeignKey(Business,blank=True,null=True,on_delete=models.SET_NULL, verbose_name=u"所属业务")
+    DOMAIN_STATUS_CHOICES = (
+    ('0', u"启用"),
+    ('1', u"未启用"),
+    ('2', u"被墙"),
+    ('3', u"弃用"),
+    )
+    state = models.CharField(max_length=64,blank=True, verbose_name=u"域名状态",choices=DOMAIN_STATUS_CHOICES)
+    status = models.BooleanField(default=True,verbose_name=u"当前状态")
+    status_code = models.CharField(max_length=64,blank=True, verbose_name=u"状态码")
+    address = models.CharField(max_length=64,blank=True, verbose_name=u"A记录")
+    supplier = models.CharField(max_length=64,blank=True, verbose_name=u"供应商")
+
+    description = models.TextField(blank=True, null=True, verbose_name=u'备注')
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(blank=True,null=True, auto_now=True)
+    class Meta:
+        verbose_name = u'域名DomainName'
+        verbose_name_plural = verbose_name
+    def __unicode__(self):
+        return self.name
+
+
+
+
 class Bugs(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     BUG_TYPE_CHOICES = (
     ('code_bug', u"代码bug"),
     ('intenet_bug', u"网络故障"),
