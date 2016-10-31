@@ -44,14 +44,6 @@
                     <td>{{ business_data.nic_name }}</td>
                 </tr>
                 <tr>
-                    <th class="text-info">web配置文件</th>
-                    <td>{{ business_data.nginx_conf_name }}</td>
-                </tr>
-                <tr>
-                    <th class="text-info">web配置文件路径</th>
-                    <td>{{ business_data.nginx_conf_dir }}</td>
-                </tr>
-                <tr>
                     <th class="text-info">平台</th>
                     <td>{{ business_data.platform.name }}</td>
                 </tr>
@@ -90,6 +82,46 @@
                     <td>
                         {{ business_data.status_update_date }}
                     </td>
+                </tr>
+                <tr>
+                    <th class="text-info">前端源站web文件</th>
+                    <td>{{ business_data.front_station_web_file }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">前端源站web文件路径</th>
+                    <td>{{ business_data.front_station_web_dir }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">前端代理web文件</th>
+                    <td>{{ business_data.front_proxy_web_file }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">前端代理web文件路径</th>
+                    <td>{{ business_data.front_proxy_web_dir }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">后台源站web文件</th>
+                    <td>{{ business_data.backend_station_web_file }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">后台源站web文件路径</th>
+                    <td>{{ business_data.backend_station_web_dir }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">后台代理web文件</th>
+                    <td>{{ business_data.backend_proxy_web_file }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">后台代理web文件路径</th>
+                    <td>{{ business_data.backend_proxy_web_dir }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">第三方反代web文件</th>
+                    <td>{{ business_data.third_proxy_web_file }}</td>
+                </tr>
+                <tr>
+                    <th class="text-info">第三方反代web文件路径</th>
+                    <td>{{ business_data.third_proxy_web_dir }}</td>
                 </tr>
                 <tr>
                     <th class="text-info">业务介绍</th>

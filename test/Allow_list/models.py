@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.translation import ugettext as _
 from accounts.models import CustomUser as User
+from business.models import Platform
 
 # IPTABLE_CHOICE = (
 #     (1001, _("鸿发国际娱乐城")),
@@ -74,6 +75,8 @@ class Iptables(models.Model):
     i_remark = models.CharField(max_length=50, null=True, blank=True)
     ## 标签
     i_tag = models.CharField(max_length=50, blank=True,default='新平台')
+    i_platform = models.ForeignKey(Platform,blank=True,null=True,on_delete=models.SET_NULL,verbose_name=u"所属平台")
+
 
     def __unicode__(self):
         return self.i_comment

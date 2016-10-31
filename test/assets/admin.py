@@ -10,12 +10,17 @@ class ServerInline(admin.TabularInline):
     readonly_fields = ['create_date']
 
 class ServerAdmin(admin.ModelAdmin):
-    list_display = ('name','ipmitool','asset','model','os_kernel','Raid_level','system_status','os_type','os_version','os_release','server_sn','Services_Code','idc','cabinet','server_cabinet_id')
+    model = models.Server
+    list_display = ('name','ipmitool','idc','cabinet','server_cabinet_id','asset','model','os_kernel','Raid_level','system_status','os_type',
+                    'os_version','os_release','server_sn','Services_Code')
+    # raw_id_fields = ('idc',)
 
 ##<class 'assets.admin.ServerAdmin'>: (admin.E109) The value of 'list_display[15]' must not be a ManyToManyField.
 
 # 服务器
 admin.site.register(models.Server,ServerAdmin)
+
+
 
 class CPUInline(admin.TabularInline):
     model = models.CPU
@@ -65,7 +70,9 @@ admin.site.register(models.NIC,NICadmin)
 #raid
 admin.site.register(models.RaidAdaptor)
 #内存
-admin.site.register(models.RAM)
+class RAMadmin(admin.ModelAdmin):
+    list_display =('asset','model','capacity','slot','sn','memo')
+admin.site.register(models.RAM,RAMadmin)
 #IP
 #硬盘
 admin.site.register(models.Disk)

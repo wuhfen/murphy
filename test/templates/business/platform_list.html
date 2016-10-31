@@ -46,6 +46,7 @@
                     <th>后台源站</th>
                     <th>后台代理</th>
                     <th>后台白名单</th>
+                    <th>第三方反代节点</th>
                     <th>操作</th>
                 </tr>
                 </thead>
@@ -78,6 +79,11 @@
                         <td>
                             {% for s in v.iptables_set.all %}
                                 <span class="label label-pill label-success">{{ s.i_source_ip }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for s in v.third_party_node.all %}
+                                <span class="label label-pill label-success">{{ s.ssh_host }}</span>
                             {% endfor %}
                         </td>
                         <td>

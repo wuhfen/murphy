@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from assets.models import IDC, Service, Line, Project
 from assets.models import Asset, Server, NIC, RaidAdaptor, Disk, CPU, RAM
-from forms import ServerForm, AssetForm, CPUForm, RAMForm, DiskForm, NICForm
+from forms import ServerForm, AssetForm, CPUForm, RAMForm, DiskForm, NICForm, RaidForm
 # Create your views here.
 
 import re
@@ -219,7 +219,7 @@ def virtual_add(request):
 
 @permission_required('assets.Can_add_Asset', login_url='/auth_error/')
 def server_detail(request,uuid):
-    """ 主机详情 """
+    """ 物理主机详情 """
     server = get_object_or_404(Server, uuid=uuid)
     virtuals = Server.objects.filter(parent=server)
     asset = server.asset
@@ -234,7 +234,7 @@ def server_detail(request,uuid):
 
 @permission_required('assets.Can_add_Asset', login_url='/auth_error/')
 def virtual_detail(request,uuid):
-    """ 主机详情 """
+    """ 虚拟主机详情 """
     server = get_object_or_404(Server, uuid=uuid)
     asset = server.asset
     cpu_data = asset.cpu
@@ -243,22 +243,85 @@ def virtual_detail(request,uuid):
 
     return render(request,'assets/virtual_detail.html', locals())
 
+###编辑物理主机信息###
 @permission_required('assets.Can_change_Asset', login_url='/auth_error/')
 def server_edit(request,uuid):
-    server = get_object_or_404(Server, uuid=uuid)
+    # server = get_object_or_404(Server, uuid=uuid)
+    server = Server.objects.get(pk=uuid)
     asset = server.asset
-    nic = NIC.objects.filter(asset=asset)
+    cpu = asset.cpu
+    cf = CPUForm(instance=cpu)
     af = AssetForm(instance=asset)
     sf = ServerForm(instance=server)
-    # nf = NICForm(instance=nic)
+
+    nic = NIC.objects.filter(asset=asset)
+    ram = RAM.objects.filter(asset=asset)
+    disk = Disk.objects.filter(asset=asset)
+    raid = RaidAdaptor.objects.filter(asset=asset)
+
+    project_all = Project.objects.all()
+    project_host = server.project.all()
+    projects = [p for p in project_all if p not in project_host]
+
+    service_all = Service.objects.all()
+    service_host = server.service.all()
+    services = [s for s in service_all if s not in service_host]
+
+    if request.method == 'POST':
+        af = AssetForm(request.POST, instance=asset)
+        sf = ServerForm(request.POST, instance=server)
+        cf = CPUForm(request.POST, instance=cpu)
+
+        if all((af.is_valid(),sf.is_valid(),cf.is_valid())):
+            asset_data = af.save()
+            cpu_data = cf.save(commit=False)
+            cpu_data.asset = asset_data
+            cpu_data.save()
+            server_data = sf.save(commit=False)
+            server_data.asset = asset_data
+            server_data.save()
+            sf.save_m2m()
+            return HttpResponseRedirect('/allow/welcome/')
     return render(request,'assets/server_edit.html', locals())
 
+###编辑虚拟主机信息###
 @permission_required('assets.Can_change_Asset', login_url='/auth_error/')
 def virtual_edit(request,uuid):
-    virtual = get_object_or_404(Server, uuid=uuid)
+    server = get_object_or_404(Server, uuid=uuid)
+    asset = server.asset
+    cpu = asset.cpu
+    cf = CPUForm(instance=cpu)
+    af = AssetForm(instance=asset)
+    sf = ServerForm(instance=server)
+
+    nic = NIC.objects.filter(asset=asset)
+
+    project_all = Project.objects.all()
+    project_host = server.project.all()
+    projects = [p for p in project_all if p not in project_host]
+
+    service_all = Service.objects.all()
+    service_host = server.service.all()
+    services = [s for s in service_all if s not in service_host]
+
+    if request.method == 'POST':
+        af = AssetForm(request.POST, instance=asset)
+        sf = ServerForm(request.POST, instance=server)
+        cf = CPUForm(request.POST, instance=cpu)
+
+        if all((af.is_valid(),sf.is_valid(),cf.is_valid())):
+            asset_data = af.save()
+            cpu_data = cf.save(commit=False)
+            cpu_data.asset = asset_data
+            cpu_data.save()
+            server_data = sf.save(commit=False)
+            server_data.asset = asset_data
+            server_data.save()
+            sf.save_m2m()
+            return HttpResponseRedirect('/allow/welcome/')
     return render(request,'assets/virtual_edit.html', locals())
 
-
+##网卡操作
 @permission_required('assets.Can_add_Asset', login_url='/auth_error/')
 def nic_add(request,uuid):
     asset_data = Asset.objects.get(uuid=uuid)
@@ -274,3 +337,137 @@ def nic_add(request,uuid):
                 nic_data.save()
 
     return render(request,'assets/nic_add.html', locals())
+
+@permission_required('assets.Can_add_Asset', login_url='/auth_error/')
+def nic_edit(request,uuid):
+    nic_data = NIC.objects.get(pk=uuid)
+    nf = NICForm(instance=nic_data)
+    if request.method == 'POST':
+        mac = request.POST.get('macaddress', '')
+        if mac:
+            nf = NICForm(request.POST,instance=nic_data)
+            if nf.is_valid():
+                nic_data = nf.save()
+
+    return render(request,'assets/nic_edit.html', locals())
+
+@permission_required('assets.Can_delete_Asset', login_url='/auth_error/')
+def nic_delete(request,uuid):
+    nic_data = NIC.objects.get(pk=uuid)
+    nic_data.delete()
+
+    return HttpResponse('Delete Success!')
+
+##内存条操作
+@permission_required('assets.Can_add_Asset', login_url='/auth_error/')
+def ram_add(request,uuid):
+    asset_data = Asset.objects.get(uuid=uuid)
+    rf = RAMForm()
+    ram_error_information = []
+    if request.method == 'POST':
+        capacity = request.POST.get('capacity', '')
+        if capacity:
+            rf = RAMForm(request.POST)
+            if rf.is_valid():
+                ram_data = rf.save(commit=False)
+                ram_data.asset = asset_data
+                ram_data.save()
+                return HttpResponse('ADD Success!')
+
+    return render(request,'assets/ram_add.html', locals())
+
+@permission_required('assets.Can_add_Asset', login_url='/auth_error/')
+def ram_edit(request,uuid):
+    ram_data = RAM.objects.get(pk=uuid)
+    rf = RAMForm(instance=ram_data)
+    if request.method == 'POST':
+        capacity = request.POST.get('capacity', '')
+        if capacity:
+            rf = RAMForm(request.POST,instance=ram_data)
+            if rf.is_valid():
+                ram_data = rf.save()
+
+    return render(request,'assets/ram_edit.html', locals())
+
+@permission_required('assets.Can_delete_Asset', login_url='/auth_error/')
+def ram_delete(request,uuid):
+    ram_data = RAM.objects.get(pk=uuid)
+    ram_data.delete()
+
+    return HttpResponse('Delete Success!')
+
+##硬盘信息
+@permission_required('assets.Can_add_Asset', login_url='/auth_error/')
+def disk_add(request,uuid):
+    asset_data = Asset.objects.get(uuid=uuid)
+    diskf = DiskForm()
+    disk_error_information = []
+    if request.method == 'POST':
+        capacity = request.POST.get('capacity', '')
+        if capacity:
+            diskf = DiskForm(request.POST)
+            if diskf.is_valid():
+                disk_data = diskf.save(commit=False)
+                disk_data.asset = asset_data
+                disk_data.save()
+                return HttpResponse('ADD Success!')
+
+    return render(request,'assets/disk_add.html', locals())
+
+@permission_required('assets.Can_add_Asset', login_url='/auth_error/')
+def disk_edit(request,uuid):
+    disk_data = Disk.objects.get(pk=uuid)
+    diskf = DiskForm(instance=disk_data)
+    if request.method == 'POST':
+        capacity = request.POST.get('capacity', '')
+        if capacity:
+            diskf = DiskForm(request.POST,instance=disk_data)
+            if diskf.is_valid():
+                disk_data = diskf.save()
+
+    return render(request,'assets/disk_edit.html', locals())
+
+@permission_required('assets.Can_delete_Asset', login_url='/auth_error/')
+def disk_delete(request,uuid):
+    disk_data = Disk.objects.get(pk=uuid)
+    disk_data.delete()
+
+    return HttpResponse('Delete Success!')
+
+##raid卡
+@permission_required('assets.Can_add_Asset', login_url='/auth_error/')
+def raid_add(request,uuid):
+    asset_data = Asset.objects.get(uuid=uuid)
+    raidf = RaidForm()
+    raid_error_information = []
+    if request.method == 'POST':
+        model = request.POST.get('model', '')
+        if model:
+            raidf = RaidForm(request.POST)
+            if raidf.is_valid():
+                raid_data = raidf.save(commit=False)
+                raid_data.asset = asset_data
+                raid_data.save()
+                return HttpResponse('ADD Success!')
+
+    return render(request,'assets/raid_add.html', locals())
+
+@permission_required('assets.Can_add_Asset', login_url='/auth_error/')
+def raid_edit(request,uuid):
+    raid_data = RaidAdaptor.objects.get(pk=uuid)
+    raidf = RaidForm(instance=raid_data)
+    if request.method == 'POST':
+        model = request.POST.get('model', '')
+        if model:
+            raidf = RaidForm(request.POST,instance=raid_data)
+            if raidf.is_valid():
+                raid_data = raidf.save()
+
+    return render(request,'assets/raid_edit.html', locals())
+
+@permission_required('assets.Can_delete_Asset', login_url='/auth_error/')
+def raid_delete(request,uuid):
+    raid_data = RaidAdaptor.objects.get(pk=uuid)
+    raid_data.delete()
+
+    return HttpResponse('Delete Success!')

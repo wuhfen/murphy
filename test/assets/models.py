@@ -6,10 +6,11 @@ from django.db import models
 from accounts.models import CustomUser as User
 from uuidfield import UUIDField
 import datetime
+import uuid
 
 # 产品线包含多个相关项目，比如直播产品线
 class Line(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=100, verbose_name=u"产品线")
     slug = models.TextField(max_length=128, blank=True, null=True, verbose_name=u"简介")
     sort = models.IntegerField(blank=True, null=True, default=0, verbose_name=u"排序")
@@ -21,7 +22,7 @@ class Line(models.Model):
 
 # 项目，包含多个资产，比如使用多少台服务器
 class Project(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     project_name = models.CharField(max_length=60, blank=True, null=True, verbose_name=u'项目名')
     aliases_name = models.CharField(max_length=60, blank=True, null=True, verbose_name=u'别名，用于监控')
     project_contact = models.ForeignKey(User, related_name=u"main_business", verbose_name=u"负责人", )
@@ -55,7 +56,7 @@ class Project(models.Model):
 
 #机房的哪个区域，关联一些机柜，关联机房
 class Moudle(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     idc = models.ForeignKey('IDC',verbose_name='属于')
     name = models.CharField(u'机房模块',max_length=64,unique=True)
     memo = models.CharField(u'备注',max_length=128,blank=True,null=True)
@@ -71,7 +72,7 @@ class Cabinet(models.Model):
     在机房一般机柜都是关联模块的 模块就是指这个机柜在机房哪个区
     因为机柜可以没有IP,所以没有关联IP 等着被IP关联 因为IP属于交换机的一部分 交换机属于机柜
     '''
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     model = models.ForeignKey(Moudle,verbose_name='所属模块',related_name=u"FAN")
     name = models.CharField('机柜名称',max_length=64)
     brander = models.CharField('机柜品牌',max_length=64)
@@ -91,31 +92,30 @@ class Cabinet(models.Model):
         verbose_name_plural = verbose_name
 
 class IDC(models.Model):
-    '''
-    机房表结构 关联运营商
-    机房表需要机房联系人 联系电话 机房的基本信息等
-    '''
-    uuid = UUIDField(auto=True, primary_key=True)
-    name = models.CharField(u'机房名称',max_length=64,unique=True)
-    contacts = models.CharField('机房负责人',max_length=63)
-    idc_phone = models.IntegerField('机房电话')
-    contacts_phone = models.IntegerField('负责人电话')
-    idc_addr = models.CharField('机房地址',max_length=63)
-    bandwidth = models.CharField('机房带宽',max_length=63)
-    operator = models.CharField(verbose_name=u'机房运营商',max_length=128,null=True, blank=True,help_text=u'例如：电信 联通 教育网 长城宽带等,国外运行商不一样')
-    memo = models.CharField(u'备注',max_length=128,blank=True,null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=64,verbose_name=u'机房名称')
+    contacts = models.CharField(verbose_name=u'机房负责人',max_length=64)
+    idc_phone = models.IntegerField(verbose_name=u'机房电话')
+    contacts_phone = models.IntegerField(verbose_name=u'负责人电话')
+    idc_addr = models.CharField(verbose_name=u'机房地址', blank=True, null=True, max_length=128)
+    bandwidth = models.CharField(verbose_name=u'机房带宽',blank=True, null=True, max_length=64)
+    operator = models.CharField(verbose_name=u'机房运营商',max_length=32,null=True, blank=True,help_text=u'例如：电信 联通 教育网 长城宽带等,国外运行商不一样')
+    memo = models.CharField(verbose_name=u'备注',max_length=128,blank=True,null=True)
+
+    class Meta:
+        verbose_name = u'IDC机房'
+        verbose_name_plural = verbose_name
+        app_label = 'assets'
+
     def __unicode__(self):
         return self.name
-    class Meta:
-        verbose_name = '机房IDC'
-        verbose_name_plural = verbose_name
 
 
 class Service(models.Model):
     """
     基础服务，如nginx, haproxy, php....
     """
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=30, unique=True, verbose_name=u"服务名称",
                             help_text=u'用于服务的开启停止或重载，如: "service nginxd restart"')
     port = models.IntegerField(null=True, blank=True, verbose_name=u"端口")
@@ -130,7 +130,7 @@ class Service(models.Model):
 
 ## 资产的厂商名称和支持电话例如保修联系
 class Manufactory(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(u'厂商或供应商名称',max_length=64, unique=True)
     support_num = models.CharField(u'支持电话',max_length=30,blank=True)
     support_email = models.EmailField(u'厂商邮件',max_length=68,blank=True)
@@ -139,7 +139,7 @@ class Manufactory(models.Model):
     def __unicode__(self):
         return self.name
     class Meta:
-        verbose_name = '设备厂商或供应商'
+        verbose_name = u'设备厂商或供应商'
         verbose_name_plural = verbose_name
 
 # 资产的属性
@@ -159,7 +159,7 @@ class Asset(models.Model):
         ('wait','线下闲置'),
         ('in','报废'),
     )
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset_number = models.CharField(verbose_name=u'资产编号',max_length=128, blank=True)
     asset_type = models.CharField(verbose_name=u'资产类型',max_length=64, blank=True)
     purpose = models.CharField(max_length=64,null=True, blank=True,verbose_name=u'用途')
@@ -184,7 +184,7 @@ class Asset(models.Model):
 
 #如果资产是服务器
 class Server(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset = models.OneToOneField('Asset')
     name = models.CharField(verbose_name=u"主机名",max_length=64)
     ssh_host = models.GenericIPAddressField(u'SSH地址', blank=True,null=True,help_text=u'一般填写外网IP')
@@ -215,8 +215,7 @@ class Server(models.Model):
     Disk_total = models.CharField(u'硬盘总容量(GB)',max_length=8,null=True, blank=True )
     RAM_total = models.CharField(u'内存总容量(GB)',max_length=8,null=True, blank=True )
 
-
-    idc = models.ForeignKey(IDC, blank=True, null=True, verbose_name=u'机房', on_delete=models.SET_NULL)
+    idc = models.ForeignKey(IDC, null=True,blank=True,verbose_name=u'机房', on_delete=models.SET_NULL)
     cabinet = models.ForeignKey(Cabinet, verbose_name=u'所属机柜',null=True, blank=True)
     server_cabinet_id = models.IntegerField(blank=True, null=True, verbose_name=u'机器位置')
 
@@ -253,7 +252,7 @@ class Server(models.Model):
 
 # cpu信息
 class CPU(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset = models.OneToOneField('Asset')
     cpu_model = models.CharField(u'CPU型号', max_length=128,blank=True)
     cpu_count = models.SmallIntegerField(u'物理cpu个数',blank=True,default='2')
@@ -270,7 +269,7 @@ class CPU(models.Model):
 
 # 内存信息
 class RAM(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset = models.ForeignKey('Asset')
     sn = models.CharField(u'SN号', max_length=128, blank=True,null=True)
     model =  models.CharField(u'内存型号', max_length=128, blank=True,null=True)
@@ -290,7 +289,7 @@ class RAM(models.Model):
 
 # 硬盘信息
 class Disk(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset = models.ForeignKey('Asset')
     sn = models.CharField(u'SN号', max_length=128, blank=True,null=True)
     slot = models.CharField(u'插槽位',max_length=64, blank=True,null=True)
@@ -318,7 +317,7 @@ class Disk(models.Model):
 
 # 网卡信息
 class NIC(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset = models.ForeignKey('Asset')
     name = models.CharField(u'网卡名', max_length=64, blank=True,null=True)
     sn = models.CharField(u'SN号', max_length=128, blank=True,null=True)
@@ -342,7 +341,7 @@ class NIC(models.Model):
 
 # raid卡信息
 class RaidAdaptor(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset = models.ForeignKey('Asset')
     sn = models.CharField(u'SN号', max_length=128, blank=True,null=True)
     slot = models.CharField(u'插口',max_length=64, blank=True)
@@ -360,7 +359,7 @@ class RaidAdaptor(models.Model):
 
 ## 资产标签
 class  Tags(models.Model):
-    uuid = UUIDField(auto=True, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(verbose_name='标签名',max_length=32, unique=True)
     creater = models.ForeignKey(User)
     create_date = models.DateField(auto_now_add=True)

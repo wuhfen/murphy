@@ -3,7 +3,7 @@
 
 from django.conf.urls import patterns, include, url
 from business import views
-from business import api
+from business import platfapi
 
 urlpatterns = [
 ##业务
@@ -34,12 +34,15 @@ urlpatterns = [
     url(r'^domain_delete/(?P<uuid>[^/]+)/$', views.domain_delete, name="domain_delete"),
     url(r'^domain_detail/(?P<uuid>[^/]+)/$', views.domain_detail, name="domain_detail"),
     url(r'^domain_add_batch/$', views.domain_add_batch, name="domain_add_batch"),
+##更新域名至服务器
+    url(r'^domain_rsync/(?P<uuid>[^/]+)/$', views.business_domain_rsync, name="domain_rsync"),
+    url(r'^domain_rsync_to_server/$', views.domain_rsync_to_server, name="domain_rsync_to_server"),
 
 
 
 ##白名单
 ##API
-    url(r'^platform_api/$', api.get_platform_data),
+    url(r'^platform_api/$', platfapi.get_platform_data),
 
 
 ]

@@ -14,8 +14,8 @@
     <h3>添加平台|Add PlatForm</h3>
     <ol class="breadcrumb">
         <li><a href="/"><i class="fa fa-dashboard"></i> 首页 </a></li>
-        <li><a href="#">业务管理</a></li>
-        <li><a href="{% url 'platform_list' %}">业务列表</a></li>
+        <li><a href="#">平台管理</a></li>
+        <li><a href="{% url 'platform_list' %}">平台列表</a></li>
         <li><a href="{% url 'platform_add' %}">添加平台</a></li>
     </ol>
 {% endblock %}
@@ -41,6 +41,10 @@
                             <tr>
                                 <!-- <th>服务器名</th> -->
                                 <td>{{ pf.name|bootstrap_horizontal }}</td>
+                            </tr>
+                            <tr>
+                                <!-- <th>代号</th> -->
+                                <td>{{ pf.nic_name|bootstrap_horizontal }}</td>
                             </tr>
                              <tr>
                                 <td>{{ pf.status|bootstrap_horizontal }}</td>

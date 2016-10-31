@@ -8,10 +8,14 @@ from django.contrib.auth.decorators import login_required, permission_required
 # from forms import BusinessForm, BugsForm
 from models import Business,Bugs,Platform,DomainName
 from forms import BusinessForm, PlatfForm, DomainNameForm
+from api.ansible_api import ansiblex_domain
 
 from Allow_list.models import Iptables
 from assets.models import Server
 import time
+import json
+from tempfile import NamedTemporaryFile
+import os
 
 ##业务增删查改
 @permission_required('business.Can_add_business', login_url='/auth_error/')
@@ -102,6 +106,9 @@ def platform_edit(request,uuid):
     backend_image_host = platform.backend_image_site.all()
     backend_active_host = platform.backend_active_site.all()
 
+    third_party_host = platform.third_party_node.all()
+
+
     front_station_all = [p for p in server_all if p not in front_station_host]
     front_proxy_all  = [p for p in server_all if p not in front_proxy_host]
     front_image_all  = [p for p in server_all if p not in front_image_host]
@@ -113,6 +120,9 @@ def platform_edit(request,uuid):
     backend_proxy_all  = [p for p in server_all if p not in backend_proxy_host]
     backend_image_all  = [p for p in server_all if p not in backend_image_host]
     backend_active_all  = [p for p in server_all if p not in backend_active_host]
+
+    third_party_all  = [p for p in server_all if p not in third_party_host]
+
 
     allow_list = platform.iptables_set.all()
     if request.method == 'POST':
@@ -169,7 +179,7 @@ def domain_add_batch(request):
         for domainname in multi_domainname:
             if domainname == '':
                 break
-            name,use,business = domainname.split('@')
+            name,use,business = domainname.split()
             business = get_object_or_404(Business,name=business)
             if business:
                 if use == u'前端域名':
@@ -191,6 +201,76 @@ def domain_add_batch(request):
         return render(request,'business/domain_add_batch.html',locals())
 
     return render(request,'business/domain_add_batch.html',locals())
+
+
+
+##将域名同步至服务器
+@permission_required('business.Can_add_domainname', login_url='/auth_error/')
+def business_domain_rsync(request,uuid):
+    business = get_object_or_404(Business,uuid=uuid)
+    return render(request,'business/domain_rsync_to_server.html',locals())
+
+
+
+def get_inventory(tag,groupname):
+    hostsFile = NamedTemporaryFile(delete=False)
+    plat_data = Platform.objects.get(name=tag)
+    data = []
+    group = "[%s]" % groupname
+    data.append(group)
+    for i in plat_data.front_station.all():
+        hosts = "%s ansible_ssh_port=%s ansible_ssh_use=root ansible_ssh_pass=%s" % (i.ssh_host,i.ssh_port,i.ssh_password)
+        data.append(hosts)
+    for s in data:
+        hostsFile.write(s+'\n')
+    hostsFile.close()
+    return hostsFile.name
+
+
+
+def domain_rsync_to_server(request):
+    data = {}
+    data['group1'] = {'10.10.239.145':"root"}
+    if request.method == 'GET':
+        uuid = request.GET['uuid']
+        business = get_object_or_404(Business,uuid=uuid)
+        tag = business.platform.name
+        template_dir_one = business.platform.nic_name
+
+        use = request.GET['use']
+        domainname_list = [x.name for x in business.domainname_set.all() if x.use == use ]
+        domainname_list = ' '.join(domainname_list)
+        if use == '0':
+            groupname = 'front_station'
+            template_dir_two = 'front_station'
+            domainname_dir = business.front_station_web_dir
+            domainname_conf = business.front_station_web_file
+        elif use == '1' and tag == u"新平台":
+            groupname = 'third_party_node'
+            template_dir_two = 'third_proxy'
+            domainname_dir = business.third_proxy_web_dir
+            domainname_conf = business.third_proxy_web_file
+        elif use == '1' and tag == u"老平台":
+            groupname = 'front_station'
+            template_dir_two = 'front_station'
+            domainname_dir = business.front_station_web_dir
+            domainname_conf = business.front_station_web_file
+        else:
+            groupname = 'backend_proxy'
+            template_dir_two = 'backend_proxy'
+            domainname_dir = business.backend_station_web_dir
+            domainname_conf = business.backend_station_web_file
+
+        inventory = get_inventory(tag,groupname)
+        task = "/etc/ansible/domainname_rsync.yml"
+        ansiblex_domain(inventory,task,groupname,template_dir_one,template_dir_two,domainname_dir,domainname_conf,domainname_list)
+        print domainname_dir
+        print inventory
+        print domainname_list
+        os.remove(inventory)
+    return HttpResponse("SUCCESS")
+
+
 
 
 

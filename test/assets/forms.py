@@ -25,7 +25,9 @@ class ServerForm(ModelForm):
     ssh_password = forms.CharField(label=u'SHH密钥',required=False,widget=forms.PasswordInput)
     class Meta:
         model = models.Server
-        exclude = ['asset']
+        fields = ['name','ipmitool','ssh_host','ssh_port','ssh_password','parent','Raid_level','Disk_total','RAM_total','project','service','model','env',
+                'os_kernel','Raid_level','system_status','os_type','os_version','os_release','server_sn','Services_Code','idc','cabinet','server_cabinet_id']
+
 
 
 class CPUForm(ModelForm):
@@ -34,6 +36,7 @@ class CPUForm(ModelForm):
         fields = ["cpu_model","cpu_count","cpu_core_count","memo"]
 
 class RAMForm(ModelForm):
+    capacity = forms.IntegerField(label=u'容量(GB)',required=True, widget=forms.TextInput(attrs={'placeholder': '必填项'}))
     class Meta:
         model = models.RAM
         fields = ["model","capacity","sn","slot","memo"]
@@ -48,3 +51,8 @@ class NICForm(ModelForm):
     class Meta:
         model = models.NIC
         fields = ["name","model","macaddress","ipaddress","netmask","memo"]
+
+class RaidForm(ModelForm):
+    class Meta:
+        model = models.RaidAdaptor
+        fields = ["model","sn","slot","memo"]

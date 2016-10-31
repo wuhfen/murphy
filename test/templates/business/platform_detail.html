@@ -36,6 +36,10 @@
                     <td>{{ platform.name }}</td>
                 </tr>
                 <tr>
+                    <th class="text-info">平台代号</th>
+                    <td>{{ platform.nic_name }}</td>
+                </tr>
+                <tr>
                     <th class="text-info">状态</th>
                     <td>{% if platform.status == True %}在用{% else %}停用{% endif %}</td>
                 </tr>
@@ -136,8 +140,16 @@
                     <td>{{ platform.backend_db_site }}</td>
                 </tr>
                 <tr>
+                    <th class="text-info">第三方反代节点</th>
+                    <td>{{ platform.backend_db_site }}</td>
+                </tr>
+                <tr>
                     <th class="text-info">介绍</th>
-                    <td>{{ platform.description }}</td>
+                    <td>
+                        {% for s in platform.third_party_node.all %}
+                            <span class="label label-pill label-success">{{ s.ssh_host }}</span>
+                        {% endfor %}
+                    </td>
                 </tr>
             </table>
         </div>

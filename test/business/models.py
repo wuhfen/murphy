@@ -12,6 +12,7 @@ import datetime
 class Platform(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=64, verbose_name=u"名称")
+    nic_name = models.CharField(max_length=32, blank=True,verbose_name=u"代号")
     status = models.BooleanField(default=True,verbose_name=u"平台状态")
 
     front_station = models.ManyToManyField(Server, blank=True, related_name=u"front_station", verbose_name=u"前端源站")
@@ -30,6 +31,10 @@ class Platform(models.Model):
     backend_active_site = models.ManyToManyField(Server, blank=True,related_name=u"backend_active_site", verbose_name=u"后台动态资源处理站")
     backend_db_site = models.CharField(max_length=128,blank=True, verbose_name=u"后台数据库接口")
 
+    third_party_node = models.ManyToManyField(Server, blank=True, related_name=u"third_party_node", verbose_name=u"第三方反代节点")
+
+
+
 
     description = models.TextField(blank=True, null=True, verbose_name=u'介绍')
     create_date = models.DateTimeField(auto_now_add=True)
@@ -45,8 +50,6 @@ class Business(models.Model):
     full_name = models.CharField(max_length=128,blank=True, verbose_name=u"业务全名")
     name = models.CharField(max_length=64, blank=True,verbose_name=u"业务简称")
     nic_name = models.CharField(max_length=64,blank=True, verbose_name=u"发布代号")
-    nginx_conf_name = models.CharField(max_length=64,blank=True, verbose_name=u"web配置文件")
-    nginx_conf_dir = models.CharField(max_length=64,blank=True, verbose_name=u"web配置文件路径")
     platform = models.ForeignKey(Platform,blank=True,null=True,on_delete=models.SET_NULL, verbose_name=u"平台")
     initsite_data = models.CharField(max_length=64,blank=True,verbose_name=u"建站时间")
     functionary = models.ForeignKey(User, related_name=u"functionary",blank=True, null=True,on_delete=models.SET_NULL, verbose_name=u"我司负责人", )
@@ -62,6 +65,18 @@ class Business(models.Model):
     )
     status = models.CharField(max_length=100,blank=True,choices=SITE_STATUS_CHOICES,verbose_name=u"业务状态")
     status_update_date = models.CharField(max_length=64,blank=True,verbose_name=u"状态变更时间")
+    front_station_web_dir = models.CharField(max_length=64,blank=True, verbose_name=u"前端web路径")
+    front_station_web_file = models.CharField(max_length=64,blank=True, verbose_name=u"前端web文件")
+    front_proxy_web_dir = models.CharField(max_length=64,blank=True, verbose_name=u"前端代理web路径")
+    front_proxy_web_file = models.CharField(max_length=64,blank=True, verbose_name=u"前端代理web文件")
+    backend_station_web_dir = models.CharField(max_length=64,blank=True, verbose_name=u"后台web路径")
+    backend_station_web_file = models.CharField(max_length=64,blank=True, verbose_name=u"后台web文件")
+    backend_proxy_web_dir = models.CharField(max_length=64,blank=True, verbose_name=u"后台代理web路径")
+    backend_proxy_web_file = models.CharField(max_length=64,blank=True, verbose_name=u"后台代理web文件")
+
+    third_proxy_web_dir = models.CharField(max_length=64,blank=True, verbose_name=u"三方反代web路径")
+    third_proxy_web_file = models.CharField(max_length=64,blank=True, verbose_name=u"三方反代web文件")
+
 
     description = models.TextField(blank=True, null=True, verbose_name=u'业务介绍')
     create_date = models.DateTimeField(auto_now_add=True)

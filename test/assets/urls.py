@@ -59,6 +59,29 @@ urlpatterns = [
 
 #"""网卡操作"""
    url(r'^nic_add/(?P<uuid>[^/]+)/$', views.nic_add,name="nic_add"),
+   url(r'^nic_delete/(?P<uuid>[^/]+)/$', views.nic_delete,name="nic_delete"),
+   url(r'^nic_edit/(?P<uuid>[^/]+)/$', views.nic_edit,name="nic_edit"),
+
+
+#"""内存条操作"""
+   url(r'^ram_add/(?P<uuid>[^/]+)/$', views.ram_add,name="ram_add"),
+   url(r'^ram_delete/(?P<uuid>[^/]+)/$', views.ram_delete,name="ram_delete"),
+   url(r'^ram_edit/(?P<uuid>[^/]+)/$', views.ram_edit,name="ram_edit"),
+
+
+#"""硬盘操作"""
+   url(r'^disk_add/(?P<uuid>[^/]+)/$', views.disk_add,name="disk_add"),
+   url(r'^disk_delete/(?P<uuid>[^/]+)/$', views.disk_delete,name="disk_delete"),
+   url(r'^disk_edit/(?P<uuid>[^/]+)/$', views.disk_edit,name="disk_edit"),
+
+
+
+#"""Raid卡操作"""
+   url(r'^raid_add/(?P<uuid>[^/]+)/$', views.raid_add,name="raid_add"),
+   url(r'^raid_delete/(?P<uuid>[^/]+)/$', views.raid_delete,name="raid_delete"),
+   url(r'^raid_edit/(?P<uuid>[^/]+)/$', views.raid_edit,name="raid_edit"),
+
+
 
 
 ]

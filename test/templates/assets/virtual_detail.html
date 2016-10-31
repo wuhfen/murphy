@@ -2,7 +2,7 @@
 {% load bootstrap %}
 {% load projects_tag %}
 
-{% block title %} 服务器详情|Server detail{% endblock %}
+{% block title %} 虚拟机详情|virtual detail{% endblock %}
 
 <!-- {% block head %}
 <link rel="stylesheet" href="/static/admin-test/plugins/datatables/dataTables.bootstrap.css">
@@ -12,11 +12,11 @@
  {% endblock %} -->
 
 
-    {% block assistant-header %} <h3> 服务器详情|Server detail</h3>
+    {% block assistant-header %} <h3> 虚拟机详情|virtual detail</h3>
     <ol class="breadcrumb">
         <li><a href="/"><i class="fa fa-dashboard"></i> 首页 </a></li>
         <li><a href="#">资产管理</a></li>
-        <li><a href="#">服务器详情</a></li>
+        <li><a href="#">虚拟机详情</a></li>
     </ol>
 {% endblock %}
 
@@ -27,7 +27,7 @@
 <div class="col-lg-4">
     <div class="box box-info">
         <div class="box-header with-border">
-            <h4 class="text-info"><strong>服务器基本信息 </strong></h4>
+            <h4 class="text-info"><strong>虚拟机基本信息 </strong></h4>
             <p class="text-warning"><i class="fa  fa-lightbulb-o"></i><small>  此服务器属于虚拟机VPS</small></p>
             <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse">
@@ -258,6 +258,7 @@
         </div>
 
         <div class="box-body">
+        <div><a href="{% url 'virtual_edit' server.uuid %}" class="btn btn-info btn-xs">点击修改虚拟机信息</a></div>
         </div>
     </div>
 
