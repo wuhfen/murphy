@@ -28,6 +28,8 @@ urlpatterns = [
     url(r'assets/', include("assets.urls")),
     url(r'allow/', include("Allow_list.urls")),
     url(r'business/', include("business.urls")),
+    url(r'deploy/', include("automation.urls")),
+
 
 
     url(r'^auth_error/$', auth_error),

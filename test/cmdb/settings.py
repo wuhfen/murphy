@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'assets',
     'Allow_list',
     'business',
+    'automation',
+
 
 
 ]

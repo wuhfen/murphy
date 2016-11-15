@@ -2,97 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
 
-  <link rel="stylesheet" href="/static/valodate/tip-yellowsimple.css">
-  <script type="text/javascript" src="/static/valodate/jquery.js"></script>
-  <script type="text/javascript" src="/static/valodate/jquery.poshytip.min.js"></script>
-  <script type="text/javascript" src="/static/valodate/last.js"></script>
-  <title></title>
-  <style type="text/css">
-    #form{
-      position: relative;
-    }
-    #form input{
-      width:200px;
-      height: 30px;
-      border-radius: 5px;
-      border:none;
-      box-shadow: 0 0 1px 1px rgba(0,11,22,.3) inset;
-      position: relative;
-      left: 0;
-      margin-bottom: 20px;
-      display: block;
-      padding-left: 5px;
-      margin-top: 3px;
-    }
-    #box{
-      position: fixed;
-      left: 500px;
-      width:600px;
-      background: #EEE;
-      top:0;
-    }
-    #box pre{
-      text-indent: -200px;
-    }
-    #box li{
-      color:#dd5500;
-    }
-    textarea{
-      width:600px;
-      height:300px;
-    }
-  </style>
+    <script src="/static/js/jquery-3.0.0.js"></script>
+    
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
 </head>
 <body>
-  <form id="form">
-用户名*<input type="text" name="username" verify/>
-密 码*<input type="password" name="password" verify/>
-姓 名<input type="text" name="name" verify="_chinese"/>
-年 龄<input type="text" name="age" verify="_digits"/>
-体 重<input type="text" name="weight" verify="{numeric:2}"/>
-手 机<input type="text" name="mobile" verify="_mobile" />
-邮 箱<input type="text" name="email" verify="_email" />
-IP<input type="text" name="ip" verify="ip" />
-MAC<input type="text" name="mac" verify="mac" />
-<button type="submit" id="submit">提交</button>
+
+    <form id="form" method="post" action="">
+    {% csrf_token %}
+
+    <div class="form-group">
+
+    <input type="checkbox" data-toggle="toggle" data-on="Enabled" checked data-off="Disabled" name="checkbox1">
+    </div>
+    <button type="submit" id="submit">提交</button>
   </form>
 
-  <div id="box">
-    <p> 
-      <ul>
-        <li>必填字段可以在元素上添加一个verify属性即可</li>
-        <li>验证数字，可以是verify="digits",如果该字段必须，那么改写为verify="_digits"</li>
-        <li>验证邮箱，可以是verify="email",如果该字段必须，那么改写为verify="_email"</li>
-        <li>验证手机，可以是verify="moible",如果该字段必须，那么改写为verify="_mobile"</li>
-        <li>验证ip，可以是verify="ip",如果该字段必须，那么改写为verify="_ip"</li>
-        <li>验证mac，可以是verify="mac",如果该字段必须，那么改写为verify="_mac"</li>
-        <li>验证小数，可以是verify="{numeric:2}",如果该字段必须，那么需要改写为verify="{required:true,numeric:2}"</li>
-      </ul>
-      
-    </p>
-    <pre id="xxx">
-      
-    </pre>
-  </div>
 
-  <script type="text/javascript">
-    //在提交之前调用
-    
-    // $("#submit").click(function(e){
-    //  if(!f.form()){
-    //    return false;
-    //  }
-    // });
-    $("button").click(function(){
-      var f = $("#form").validateForm();
-      if(!f.form()){
-        return false;
-      }
-    })
-    $("#xxx").text($("form").html());
-    
 
-  </script>
 </body>
 </html>

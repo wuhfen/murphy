@@ -71,8 +71,8 @@ def iptables(request):
             req = urllib2.Request(ip_api)
             rel = urllib2.urlopen(req).read()
             result = rel.strip('[]').replace('\"','').split(',')
-            if ("中国" not in result) and ("香港" not in result):
-                fo_errors.append("你输入的IP是:%s,IP属于:%s,添加状态：失败" % (ip,rel))
+            # if ("中国" not in result) and ("香港" not in result):
+            #     fo_errors.append("你输入的IP是:%s,IP属于:%s,添加状态：失败" % (ip,rel))
             if not fo_errors:
                 comment = u"WEB_PORT_%s" % comment
                 user = request.user
