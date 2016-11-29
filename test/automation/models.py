@@ -65,17 +65,17 @@ class Confile(models.Model):
 class deploy(models.Model):
     #"""申请发布表单，用户只需要填写名称，分支与版本"""
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    num = models.IntegerField(_(u'序号'))
+    dtime = models.DateTimeField(verbose_name=u'发布时间',blank=True, auto_now=True)
     name = models.CharField(_(u'发布名称'),max_length=64)
-    branches = models.CharField(_(u'分支'),max_length=64)
-    release = models.CharField(_(u'版本'),max_length=64)
+    branches = models.CharField(_(u'分支'),max_length=64,blank=True)
+    release = models.CharField(_(u'commit_id'),max_length=64,blank=True)
     executive_user = models.ForeignKey(Users,verbose_name=u'用户')
     confile = models.ForeignKey('Confile',verbose_name=u'发布项目配置')
     CONFILE_CHECK = [(i, i) for i in (u'已通过',u'未通过')]
     check_conf = models.CharField(_(u'审核状态'),max_length=32,choices=CONFILE_CHECK,blank=True)
     STATUS_CHECK = [(i, i) for i in (u'已发布',u'未发布',u'已回滚')]
-    status = models.CharField(_(u'状态'),max_length=32,choices=STATUS_CHECK,default=u'未发布')
-    tag = models.CharField(_(u'标签'),max_length=64)
+    status = models.CharField(_(u'状态'),max_length=32,choices=STATUS_CHECK,default=u'未发布',blank=True)
+    tag = models.CharField(_(u'标签'),max_length=64,blank=True)
     memo = models.TextField(_(u'发布原因'))
 
     class Meta:

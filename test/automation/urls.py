@@ -24,9 +24,16 @@ urlpatterns = [
 
 
 
+
 #"""申请发布"""
     url(r'^deploy_business/$', views.deploy_business, name="deploy_business"),
+    url(r'^deploy_list/$', views.deploy_list, name="deploy_list"),
     url(r'^deploy_add/(?P<uuid>[^/]+)/$', views.deploy_add, name="deploy_add"),
+    url(r'^deploy_online/(?P<uuid>[^/]+)/$', views.deploy_online, name="deploy_online"),
+
+    url(r'^deploy_branch_select/', views.deploy_branch_select, name='deploy_branch_select'),
+
+
 
 
 

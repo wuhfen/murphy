@@ -101,6 +101,13 @@ class Repo(object):
         cmd.append(str(reference))
         self.git_command(*cmd)
 
+    def git_change_branch(self, branch):
+        """Checkout and create branch """
+        cmd = ["checkout", "-b"]
+        if branch:
+            cmd.append(str(branch))
+        self.git_command(*cmd)
+
     def git_branches(self):
         """Gets a list with the names of all branches"""
         res = self.git_command("branch")
@@ -109,8 +116,20 @@ class Repo(object):
     def git_all_branch(self):
         """Gets a list with the names of all branches"""
         res = self.git_command("branch",'-a')
-        # return [head.strip(" *") for head in res.split("\n") if head]
-        return res
+        ll = [head.strip(" *") for head in res.split('\n') if head]
+        data = {}
+        count = 1
+        l2 = []
+        for i in ll:
+            if "remotes" in i:
+                br_name = i.split("/")[-1]
+                l2.append(br_name)
+        l3 = []
+        [l3.append(i) for i in l2 if not i in l3]
+
+        return l3
+
+        # return res
 
     def git_branch(self, name, start="HEAD"):
         """Create the branch named 'name'"""
@@ -167,7 +186,9 @@ class Repo(object):
         if kwargs:
             for key in kwargs:
                 cmds += [key, kwargs[key]]
-        return self.git_command(*cmds)
+        res = self.git_command(*cmds)
+        log_list = [tag[0:8:] + "-Message:" + '_'.join(tag.split()[1:10]) for tag in res.split("\n") if tag]
+        return log_list
 
     def git_status(self, empty=False):
         """Get repository status.
@@ -206,7 +227,7 @@ class Repo(object):
         if rebase:
             args.append('--rebase')
         if source:
-            args.append(source)
+            args.append('--all')
         self.git_command("pull", *args)
 
     def git_fetch(self, source=None):
@@ -229,8 +250,8 @@ class Repo(object):
         """Get the identified revision as a Revision object"""
         out = self.git_log(identifier=identifier,
                           template=self.rev_log_tpl)
-
         return Revision(out)
+
 
     def read_config(self):
         """Read the configuration as seen with 'git config -l'
