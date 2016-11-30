@@ -109,7 +109,7 @@ def conf_list(request):
 
 @permission_required('automation.Can_delete_Confile', login_url='/auth_error/')
 def conf_delete(request,uuid):
-    data = get_object_or_404(Tools,uuid=uuid)
+    data = get_object_or_404(Confile,uuid=uuid)
     if data:
         data.delete()
         return HttpResponse("SUCCESS!")
@@ -322,7 +322,7 @@ def deploy_online(request,uuid):
         now = int(time.time())
         deploy.objects.filter(pk=uuid).update(status=u'已发布',execution_time=now,exist=True)
 
-        alldata = deploy.objects.filter(exist=True)
+        alldata = deploy.objects.filter(exist=True).filter(confile=conf_data)
         exist_num = alldata.count()
         if int(exist_num) > int(max_number):
             Lexist = [a.execution_time for a in alldata if a]
