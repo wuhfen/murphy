@@ -178,9 +178,13 @@ def deploy_add(request,uuid):
     data = Confile.objects.get(pk=uuid)
     path = data.localhost_dir
     repo = Repo(path)
+    repo.git_checkout("master")          ##git pull --all之前一定要git checkout master
     pull = repo.git_pull(source="all")  ##在分支上先执行pull，更新到最新的仓库数据，相当于git pull --all
     branch = repo.git_all_branch()    ##拉取所有的分支信息，分支下面的commit_id是使用ajax获取
     tags = repo.git_tags()            ##拉取所有的tag信息
+
+    now = int(time.time())
+    ctime = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
     df = DeployForm()
     df_errors = []
@@ -196,26 +200,24 @@ def deploy_add(request,uuid):
             executive_user = request.user
             confile = data
             check_conf = "pass"
-            status = "未发布"
-            dtime = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-            tag_data = deploy(dtime=dtime,name=name,branches=branches,release=release,executive_user=executive_user,
-                confile=confile,check_conf=check_conf,status=status,tag=tag,memo=memo)
+            status = u"未发布"
+            tag_data = deploy(ctime=ctime,name=name,branches=branches,release=release,executive_user=executive_user,
+                confile=confile,check_conf=check_conf,status=status,tag=tag,memo=memo,execution_time=now,exist=False)
             tag_data.save()
 
             return HttpResponseRedirect('/success/')
         elif 'formbranch' in request.POST:
-            dtime = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
             name = request.POST.get('branch_name','')
             branches = request.POST.get('branches','')
             release = request.POST.get('release','')[0:8]
             executive_user = request.user
             confile = data
             check_conf = "pass"
-            status = "未发布"
+            status = u"未发布"
             tag = ''
             memo = request.POST.get('branch_memo','')
-            branch_data = deploy(dtime=dtime,name=name,branches=branches,release=release,executive_user=executive_user,
-                confile=confile,check_conf=check_conf,status=status,tag=tag,memo=memo)
+            branch_data = deploy(ctime=ctime,name=name,branches=branches,release=release,executive_user=executive_user,
+                confile=confile,check_conf=check_conf,status=status,tag=tag,memo=memo,execution_time=now,exist=False)
             branch_data.save()
             return HttpResponseRedirect('/success/')
 
@@ -256,7 +258,7 @@ def create_inventory(uuid,groupname):
     data = Confile.objects.get(pk=uuid)
     group = "[%s]" % groupname
     L = [group]
-    for i in data.server_list:
+    for i in [x for x in data.server_list.split('\r\n') if x]:
         i = Server.objects.get(ssh_host=i)
         host = "%s ansible_ssh_port=%s ansible_ssh_use=root ansible_ssh_pass=%s" % (i.ssh_host,i.ssh_port,i.ssh_password)
         L.append(host)
@@ -291,10 +293,10 @@ def deploy_online(request,uuid):
     pull = repo.git_pull(source="all")          ##更新所有的分支
     if request.method == 'POST':
         ##step1 切换分支并切换到具体版本
-        if data.release:
-            change_version = repo.git_checkout(data.release)
-        else:
+        if data.tag:
             change_version = repo.git_checkout(data.tag)
+        else:
+            change_version = repo.git_checkout(commit_id)
         ##step2 删除临时目录，因为下面cpoy代码的时候，目录不能存在，不然在这里应该要创建临时目录的
         path = '/tmp/' + commit_id
         if os.path.isdir(path):
@@ -322,25 +324,23 @@ def deploy_online(request,uuid):
 
         alldata = deploy.objects.filter(exist=True)
         exist_num = alldata.count()
-        if exist_num > max_number:
+        if int(exist_num) > int(max_number):
             Lexist = [a.execution_time for a in alldata if a]
             a = min(Lexist)
             deploy.objects.filter(execution_time=a).update(exist=False)
             expire_commit =  deploy.objects.get(execution_time=a).release
             msg = "远程主机过期版本号为：%s" % expire_commit
+        else:
+            expire_commit = '123456789'   ## 如果有过期版本就删除，如果没有，为了防止误删，给过期的版本赋值为123456789
         ##step7-8-9 使用ansible将本地主机上的代码传送至远程服务器，并执行pre和post动作
         groupname = "deploy_group"
         inventory = create_inventory(conf_data.uuid,groupname)         #发布远程服务器必须要在资产列表里面有，不然会报错
         play_book = '/etc/ansible/rsync.yml'
-        tmp_dir = path
+        tmp_dir = '/tmp'
         webroot_user = conf_data.webroot_user
         webroot = conf_data.webroot
         release_dir = conf_data.relaese_dir
-        commit_id = data.release
-        if expire_commit:
-            expire_commit = expire_commit
-        else:
-            expire_commit = '123456789'      #不存在的目录，防止误删
+        commit_id = commit_id
         pre_release_ob = conf_data.pre_release
         pre_release_list = [a for a in pre_release_ob.split('\r\n') if a]
         pre_release = " && ".join(pre_release_list)
@@ -349,9 +349,8 @@ def deploy_online(request,uuid):
         post_release = " && ".join(post_release_list)
 
         job = deploy_use_ansible.delay(inventory,play_book,tmp_dir,webroot_user,webroot,release_dir,commit_id,expire_commit,pre_release,post_release,groupname)
-        os.remove(inventory)
-        task_id = job.id
-
+        if job: 
+            task_id = job.id
 
     return render(request,'automation/deploy_online.html',locals())
 
