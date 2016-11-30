@@ -65,7 +65,7 @@ class Confile(models.Model):
 class deploy(models.Model):
     #"""申请发布表单，用户只需要填写名称，分支与版本"""
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    dtime = models.DateTimeField(verbose_name=u'发布时间',blank=True, auto_now=True)
+    ctime = models.DateTimeField(verbose_name=u'创建时间',blank=True, auto_now=True)
     name = models.CharField(_(u'发布名称'),max_length=64)
     branches = models.CharField(_(u'分支'),max_length=64,blank=True)
     release = models.CharField(_(u'commit_id'),max_length=64,blank=True)
@@ -77,6 +77,9 @@ class deploy(models.Model):
     status = models.CharField(_(u'状态'),max_length=32,choices=STATUS_CHECK,default=u'未发布',blank=True)
     tag = models.CharField(_(u'标签'),max_length=64,blank=True)
     memo = models.TextField(_(u'发布原因'))
+    execution_time = models.IntegerField(_(u'发布时间'),default=0)
+    exist = models.BooleanField(default='False')
+
 
     class Meta:
         verbose_name = u'发布申请单'

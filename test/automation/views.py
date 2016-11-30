@@ -16,6 +16,10 @@ import json
 import time
 from django.http import JsonResponse
 from .tasks import deploy_use_ansible
+from tempfile import NamedTemporaryFile
+from assets.models import Server
+from celery.result import AsyncResult
+
 
 @permission_required('automation.Can_add_Tools', login_url='/auth_error/')
 def tools_add(request):
@@ -148,15 +152,17 @@ def conf_check(request,uuid):
     data = Confile.objects.get(pk=uuid)
     git_addr = data.tool.address
     path = data.localhost_dir
-    num = data.max_number
-    repo = Repo(path)
+    # num = data.max_number
+    repo = Repo("/tmp/etc/murphy")
     bb = repo.git_all_branch()         #获取所有的分支信息
-    commit = repo.git_log(limit=num,template="--pretty=oneline")   #获取当前分支的log
+    # commit = repo.git_log(limit=num,template="--pretty=oneline")   #获取当前分支的log
+    # log = repo.git_log()
+    show = repo.git_show_tag("/tmp/etc/murphy",release="v-1.0.3").split()[1]
 
-    # return HttpResponse(commit)
+    return HttpResponse(show[0:8])
 
 
-    return render(request,'automation/conf_check.html',locals())
+    #return render(request,'automation/conf_check.html',locals())
 
 
 
@@ -185,7 +191,8 @@ def deploy_add(request,uuid):
             tag = request.POST.get('tag','')
             memo = request.POST.get('tag_memo','')
             branches = "master"
-            release = ''
+            show = repo.git_show_tag(path,release=tag).split()[1]
+            release = show[0:8]
             executive_user = request.user
             confile = data
             check_conf = "pass"
@@ -243,47 +250,107 @@ def deploy_list(request):
 
     return render(request,'automation/deploy_list.html',locals())
 
+
+def create_inventory(uuid,groupname):
+    hostsFile = NamedTemporaryFile(delete=False)
+    data = Confile.objects.get(pk=uuid)
+    group = "[%s]" % groupname
+    L = [group]
+    for i in data.server_list:
+        i = Server.objects.get(ssh_host=i)
+        host = "%s ansible_ssh_port=%s ansible_ssh_use=root ansible_ssh_pass=%s" % (i.ssh_host,i.ssh_port,i.ssh_password)
+        L.append(host)
+    for s in L:
+        hostsFile.write(s+'\n')
+    hostsFile.close()
+    return hostsFile.name
+
+@permission_required('automation.Can_delete_deploy', login_url='/auth_error/')
+def poll_state(request):
+    """ A view to report the progress to the user """
+    if 'task_id' in request.GET and request.GET['task_id']:
+        task_id = request.GET['task_id']
+        task = AsyncResult(task_id)
+        data = task.status
+    else:
+        data = 'No task_id in the request'
+
+    json_data = json.dumps(data)
+    return HttpResponse(json_data, content_type='application/json')
+
 @permission_required('automation.Can_delete_deploy', login_url='/auth_error/')
 def deploy_online(request,uuid):
     data = get_object_or_404(deploy,pk=uuid)
     conf_data = data.confile
+    max_number = conf_data.max_number
     branch = data.branches
+    commit_id = data.release
     repo_path = conf_data.localhost_dir      ##这里需要做一个有没有repo clone的判断
     repo = Repo(repo_path)
     change_branch = repo.git_checkout("master")   ##切换到分支上面
     pull = repo.git_pull(source="all")          ##更新所有的分支
-    ##step1 切换分支并切换到具体版本
-    if data.release:
-        change_version = repo.git_checkout(data.release)
-    else:
-        change_version = repo.git_checkout(data.git)
-    ##step2 删除临时目录，因为下面cpoy代码的时候，目录不能存在，不然在这里应该要创建临时目录的
-    path = '/tmp/coderepo/'
-    if os.path.isdir(path):
-        shutil.rmtree(path)      ##如果目录存在就删除，不存在就创建新的
-        os.makedirs(path)
-    else:
-        os.makedirs(path)
-    ##step3 代码拷贝到临时目录前需要执行的动作
-    pre_deploy = conf_data.pre_deploy
-    Lpre = [a for a in pre_deploy.split('\r\n') if a]
-    for i in Lpre:
-        res = subprocess.Popen(i,shell=True)
-    ##step4 将代码拷贝到临时目录
-    ignores = conf_data.exclude
-    L = [a for a in ignores.split('/r/n') if a]
-    src = repo_path
-    dst = path
-    shutil.copytree(src,dst,ignore=shutil.ignore_patterns(*L))
-    ##step5 代码拷贝到临时目录后需要执行的一些动作
-    post_deploy = conf_data.post_deploy
-    Lpost = [a for a in post_deploy.split('\r\n') if a]
-    for i in Lpost:
-        res = subprocess.Popen(i,shell=True)
-    ##step6 使用ansible将本地主机上的代码传送至远程服务器
+    if request.method == 'POST':
+        ##step1 切换分支并切换到具体版本
+        if data.release:
+            change_version = repo.git_checkout(data.release)
+        else:
+            change_version = repo.git_checkout(data.tag)
+        ##step2 删除临时目录，因为下面cpoy代码的时候，目录不能存在，不然在这里应该要创建临时目录的
+        path = '/tmp/' + commit_id
+        if os.path.isdir(path):
+            shutil.rmtree(path)      ##如果目录存在就删除
 
-    deploy_use_ansible.delay(task,ip,remark,comment)
+        ##step3 代码拷贝到临时目录前需要执行的动作
+        pre_deploy = conf_data.pre_deploy
+        Lpre = [a for a in pre_deploy.split('\r\n') if a]
+        for i in Lpre:
+            res = subprocess.Popen(i,shell=True)
+        ##step4 将代码拷贝到临时目录
+        ignores = conf_data.exclude
+        L = [a for a in ignores.split('/r/n') if a]
+        src = repo_path
+        dst = path
+        shutil.copytree(src,dst,ignore=shutil.ignore_patterns(*L))
+        ##step5 代码拷贝到临时目录后需要执行的一些动作
+        post_deploy = conf_data.post_deploy
+        Lpost = [a for a in post_deploy.split('\r\n') if a]
+        for i in Lpost:
+            res = subprocess.Popen(i,shell=True)
+        ##step6 更新发布状态为已发布，更新发布时间，更新exist状态，将远程服务器上要删掉的commitid找出来，传给ansible
+        now = int(time.time())
+        deploy.objects.filter(pk=uuid).update(status=u'已发布',execution_time=now,exist=True)
 
+        alldata = deploy.objects.filter(exist=True)
+        exist_num = alldata.count()
+        if exist_num > max_number:
+            Lexist = [a.execution_time for a in alldata if a]
+            a = min(Lexist)
+            deploy.objects.filter(execution_time=a).update(exist=False)
+            expire_commit =  deploy.objects.get(execution_time=a).release
+            msg = "远程主机过期版本号为：%s" % expire_commit
+        ##step7-8-9 使用ansible将本地主机上的代码传送至远程服务器，并执行pre和post动作
+        groupname = "deploy_group"
+        inventory = create_inventory(conf_data.uuid,groupname)         #发布远程服务器必须要在资产列表里面有，不然会报错
+        play_book = '/etc/ansible/rsync.yml'
+        tmp_dir = path
+        webroot_user = conf_data.webroot_user
+        webroot = conf_data.webroot
+        release_dir = conf_data.relaese_dir
+        commit_id = data.release
+        if expire_commit:
+            expire_commit = expire_commit
+        else:
+            expire_commit = '123456789'      #不存在的目录，防止误删
+        pre_release_ob = conf_data.pre_release
+        pre_release_list = [a for a in pre_release_ob.split('\r\n') if a]
+        pre_release = " && ".join(pre_release_list)
+        post_release_ob = conf_data.post_release
+        post_release_list = [a for a in post_release_ob.split('\r\n') if a]
+        post_release = " && ".join(post_release_list)
+
+        job = deploy_use_ansible.delay(inventory,play_book,tmp_dir,webroot_user,webroot,release_dir,commit_id,expire_commit,pre_release,post_release,groupname)
+        os.remove(inventory)
+        task_id = job.id
 
 
     return render(request,'automation/deploy_online.html',locals())

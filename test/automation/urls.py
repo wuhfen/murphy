@@ -20,6 +20,8 @@ urlpatterns = [
     url(r'^conf_detail/(?P<uuid>[^/]+)/$', views.conf_detail, name='conf_detail'),
     url(r'^conf_copy/(?P<uuid>[^/]+)/$', views.conf_copy, name='conf_copy'),
     url(r'^conf_check/(?P<uuid>[^/]+)/$', views.conf_check, name='conf_check'),
+    # url(r'^conf_check/$', views.conf_check, name='conf_check'),
+
 
 
 
@@ -30,7 +32,7 @@ urlpatterns = [
     url(r'^deploy_list/$', views.deploy_list, name="deploy_list"),
     url(r'^deploy_add/(?P<uuid>[^/]+)/$', views.deploy_add, name="deploy_add"),
     url(r'^deploy_online/(?P<uuid>[^/]+)/$', views.deploy_online, name="deploy_online"),
-
+    url(r'^poll_state$', views.poll_state,name='poll_state'),
     url(r'^deploy_branch_select/', views.deploy_branch_select, name='deploy_branch_select'),
 
 

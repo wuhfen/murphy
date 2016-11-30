@@ -66,6 +66,7 @@
                             <a href="{% url 'domain_detail' v.uuid %}" class="btn btn-xs btn-primary">详情</a>
                             <a href="{% url 'domain_edit' v.uuid %}" class="btn btn-xs btn-primary">修改</a>
                             <a href="{% url 'domain_delete' v.uuid %}" class="btn btn-xs btn-danger domain-delete">删除</a>
+                            <a href="{% url 'domain_rsync' v.uuid %}" class="btn btn-xs btn-success">同步</a>
                         </td>
                     </tr>
                 {% endfor %}

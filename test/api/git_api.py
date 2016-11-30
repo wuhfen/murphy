@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 from __future__ import print_function, unicode_literals, with_statement
 from subprocess import Popen, STDOUT, PIPE
 try:
@@ -43,6 +43,8 @@ class Revision(object):
         """Returns true if self.node == other.node"""
         return self.node == other.node
 
+#!/usr/bin/env python
+# coding:utf-8
 
 class Repo(object):
     """A representation of a Mercurial repository"""
@@ -189,6 +191,16 @@ class Repo(object):
         res = self.git_command(*cmds)
         log_list = [tag[0:8:] + "-Message:" + '_'.join(tag.split()[1:10]) for tag in res.split("\n") if tag]
         return log_list
+
+    def git_show_tag(self,path,release=None):
+        """show information about release"""
+        cmds = ["tag"]
+        if release: cmds += [ "-v", release]
+        if path:
+            subproc = Popen(["git"] + cmds, stdout=PIPE, stderr=PIPE, cwd=path)
+            out, err = [x.decode("utf-8") for x in  subproc.communicate()]
+        return out
+
 
     def git_status(self, empty=False):
         """Get repository status.
