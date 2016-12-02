@@ -165,3 +165,5 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE= 'Asia/Shanghai'
+
+ANSIBLE_ROLES_DIR='/root/myproject/cmdb/ansible_workdir/'
