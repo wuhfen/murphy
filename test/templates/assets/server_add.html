@@ -44,12 +44,20 @@
                     <!-- <th>服务器名</th> -->
                     <td>{{ sf.name|bootstrap_horizontal }}</td>
                 </tr>
+                <tr>
+                    <!-- <th>服务器名</th> -->
+                    <td>{{ sf.ansible_name|bootstrap_horizontal }}</td>
+                </tr>
                  <tr hidden="hidden">
                     <td>{{ af.asset_type|bootstrap_horizontal }}</td>
                 </tr>
                 <tr>
                     <!-- <th>ssh host</th> -->
                     <td>{{ sf.ssh_host|bootstrap_horizontal }}</td>
+                </tr>
+                <tr>
+                    <!-- <th>ssh host</th> -->
+                    <td>{{ sf.ssh_user|bootstrap_horizontal }}</td>
                 </tr>
                 <tr>
                     <!-- <th>ssh port</th> -->
@@ -62,6 +70,10 @@
                 <tr>
                     <!-- <th>远控卡IP</th> -->
                     <td>{{ sf.ipmitool|bootstrap_horizontal }}</td>
+                </tr>
+                <tr>
+                    <!-- <th>曾用IP</th> -->
+                    <td>{{ sf.old_ip|bootstrap_horizontal }}</td>
                 </tr>
                 <tr>
                     <!-- <th>资产编号</th> -->
@@ -157,7 +169,7 @@
                 </tr>
                 <tr>
                     <!-- <th>备注</th> -->
-                    <td>{{ af.memo |bootstrap_horizontal}}</td>
+                    <td>{{ af.remarks |bootstrap_horizontal}}</td>
                 </tr>
             </table>
             </div>
@@ -354,7 +366,7 @@
 <!--运行服务-->
         <div class="col-lg-6 col-md-6">
             <div class="box box-info">
-                <div class="box-header with-border"> 服务器运行程序 
+                <div class="box-header with-border"> 服务器运行程序
                     <div class="box-tools pull-right">
                         <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse">
                             <i class="fa fa-minus"></i></button>
@@ -421,13 +433,13 @@
                 check_ip: [/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/, 'ip不正确']
             },
         fields: {
-            "name": {
-                rule: "required;check_node",
-                tip: "输入主机名",
-                ok: "",
-                msg: {required: "必须填写!"},
-                data: {'data-ok':"主机名可以使用", 'data-msg-required': '正确'}
-            },
+            // "name": {
+            //     rule: "required;check_node",
+            //     tip: "格式:字母+数字+下划线",
+            //     ok: "",
+            //     msg: {required: "必须填写!"},
+            //     data: {'data-ok':"主机名可以使用", 'data-msg-required': '正确'}
+            // },
             "mac": {
                 rule: "required;check_mac",
                 tip: "输入MAC",
@@ -452,12 +464,12 @@
                 ok:"",
                 msg:{required: "必须填写!"}
             },
-            "asset_number":{
-                rule: "required;",
-                tip: "",
-                ok:"",
-                msg:{required: "必须填写!"}
-            },
+            // "asset_number":{
+            //     rule: "required;",
+            //     tip: "",
+            //     ok:"",
+            //     msg:{required: "必须填写!"}
+            // },
             "system":{
                 rule: "required;",
                 tip: "",

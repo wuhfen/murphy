@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys  
+
+reload(sys)  
+sys.setdefaultencoding('utf8')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,6 +53,11 @@ INSTALLED_APPS = [
     'Allow_list',
     'business',
     'automation',
+    'audit',
+    'import_export',
+    'opswiki',
+    'pagedown',
+
 
 
 
@@ -133,19 +142,28 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-STATIC_ROOT = '/website/cmdb/static/'
+# STATIC_ROOT = '/website/cmdb/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     ('js', os.path.join(STATIC_ROOT, 'js').replace('\\', '/')),
     ('admin-test', os.path.join(STATIC_ROOT, 'admin-test').replace('\\', '/')),
     ('css', os.path.join(STATIC_ROOT, 'css').replace('\\', '/')),
-    ('images', os.path.join(STATIC_ROOT, 'images').replace('\\', '/')),
+    # ('images', os.path.join(STATIC_ROOT, 'images').replace('\\', '/')),
+    ('pagedown', os.path.join(STATIC_ROOT, 'pagedown').replace('\\', '/')),
+    ('pagedown-extra', os.path.join(STATIC_ROOT, 'pagedown-extra').replace('\\', '/')),
     ('bootstrap', os.path.join(STATIC_ROOT, 'bootstrap').replace('\\', '/')),
-    ('layer', os.path.join(STATIC_ROOT, 'layer').replace('\\', '/')),
     ('layer-v2.4', os.path.join(STATIC_ROOT, 'layer-v2.4').replace('\\', '/')),
     ('valodate', os.path.join(STATIC_ROOT, 'valodate').replace('\\', '/')),
 
     ]
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',    #causes verbose duplicate notifications in django 1.9
+)
 
 # EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -167,3 +185,16 @@ CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE= 'Asia/Shanghai'
 
 ANSIBLE_ROLES_DIR='/root/myproject/cmdb/ansible_workdir/'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+REDIS_TIMEOUT=7*24*60*60
+CUBES_REDIS_TIMEOUT=60*60
+NEVER_REDIS_TIMEOUT=365*24*60*60

@@ -44,6 +44,10 @@
                     <!-- <th>服务器名</th> -->
                     <td>{{ sf.name|bootstrap_horizontal }}</td>
                 </tr>
+                <tr>
+                    <!-- <th>服务器名</th> -->
+                    <td>{{ sf.ansible_name|bootstrap_horizontal }}</td>
+                </tr>
                  <tr hidden="hidden">
                     <td>{{ af.asset_type|bootstrap_horizontal }}</td>
                 </tr>
@@ -52,12 +56,20 @@
                     <td>{{ sf.ssh_host|bootstrap_horizontal }}</td>
                 </tr>
                 <tr>
+                    <!-- <th>ssh host</th> -->
+                    <td>{{ sf.ssh_user|bootstrap_horizontal }}</td>
+                </tr>
+                <tr>
                     <!-- <th>ssh port</th> -->
                     <td>{{ sf.ssh_port|bootstrap_horizontal }}</td>
                 </tr>
                 <tr>
                     <!-- <th>ssh password</th> -->
                     <td>{{ sf.ssh_password|bootstrap_horizontal }}</td>
+                </tr>
+                <tr>
+                    <!-- <th>资产编号</th> -->
+                    <td>{{ sf.old_ip|bootstrap_horizontal }}</td>
                 </tr>
                 <tr>
                     <!-- <th>资产编号</th> -->
@@ -113,7 +125,7 @@
                 </tr>
                 <tr>
                     <!-- <th>备注</th> -->
-                    <td>{{ af.memo |bootstrap_horizontal}}</td>
+                    <td>{{ af.remarks |bootstrap_horizontal}}</td>
                 </tr>
             </table>
             </div>
@@ -337,13 +349,13 @@
                 check_ip: [/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/, 'ip不正确']
             },
         fields: {
-            "name": {
-                rule: "required;check_node",
-                tip: "输入主机名",
-                ok: "",
-                msg: {required: "必须填写!"},
-                data: {'data-ok':"主机名可以使用", 'data-msg-required': '正确'}
-            },
+            // "name": {
+            //     rule: "required;check_node",
+            //     tip: "格式：字母+数字+下划线",
+            //     ok: "",
+            //     msg: {required: "必须填写!"},
+            //     data: {'data-ok':"主机名可以使用", 'data-msg-required': '正确'}
+            // },
              "nic_name0":{
                 rule: "required;check_node",
                 tip: "",
@@ -362,24 +374,24 @@
                 ok:"",
                 msg:{required: "必须填写!"}
             },
-             "nic_name1":{
-                rule: "required;check_node",
-                tip: "",
-                ok:"",
-                msg:{required: "必须填写!"}
-            },
-             "nic_macaddress1":{
-                rule: "required;check_mac",
-                tip: "",
-                ok:"",
-                msg:{required: "必须填写!"}
-            },
-            "nic_ipaddress1":{
-                rule: "required;check_ip",
-                tip: "输入ip地址",
-                ok:"",
-                msg:{required: "必须填写!"}
-            },
+            //  "nic_name1":{
+            //     rule: "required;check_node",
+            //     tip: "",
+            //     ok:"",
+            //     msg:{required: "必须填写!"}
+            // },
+            //  "nic_macaddress1":{
+            //     rule: "required;check_mac",
+            //     tip: "",
+            //     ok:"",
+            //     msg:{required: "必须填写!"}
+            // },
+            // "nic_ipaddress1":{
+            //     rule: "required;check_ip",
+            //     tip: "输入ip地址",
+            //     ok:"",
+            //     msg:{required: "必须填写!"}
+            // },
             "ssh_host":{
                 rule: "required;check_ip",
                 tip: "输入ip地址",
@@ -392,12 +404,12 @@
                 ok:"",
                 msg:{required: "必须填写!"}
             },
-            "asset_number":{
-                rule: "required;",
-                tip: "",
-                ok:"",
-                msg:{required: "必须填写!"}
-            },
+            // "asset_number":{
+            //     rule: "required;",
+            //     tip: "",
+            //     ok:"",
+            //     msg:{required: "必须填写!"}
+            // },
              "system_status":{
                 rule: "required;",
                 tip: "",

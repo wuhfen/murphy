@@ -160,7 +160,7 @@ class Asset(models.Model):
         ('in','报废'),
     )
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    asset_number = models.CharField(verbose_name=u'资产编号',max_length=128, blank=True)
+    asset_number = models.CharField(verbose_name=u'资产编号',max_length=128, blank=True,null=True)
     asset_type = models.CharField(verbose_name=u'资产类型',max_length=64, blank=True)
     purpose = models.CharField(max_length=64,null=True, blank=True,verbose_name=u'用途')
     status = models.CharField(choices=Status_Status,max_length=64,verbose_name = u'设备状态',default='on')
@@ -172,7 +172,7 @@ class Asset(models.Model):
     tags = models.ManyToManyField('Tags' ,blank=True)
     applicant = models.CharField(verbose_name=u'资产申请者',max_length=64,null=True, blank=True)
     manager = models.ForeignKey(User, verbose_name=u'资产管理员',null=True, blank=True)
-    memo = models.TextField(u'备注', null=True, blank=True)
+    remarks = models.TextField(u'备注', blank=True)
     mark = models.BooleanField(default=False)
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(blank=True, auto_now=True)
@@ -186,10 +186,12 @@ class Asset(models.Model):
 class Server(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     asset = models.OneToOneField('Asset')
-    name = models.CharField(verbose_name=u"主机名",max_length=64)
-    ssh_host = models.GenericIPAddressField(u'SSH地址', blank=True,null=True,help_text=u'一般填写外网IP')
-    ssh_port = models.SmallIntegerField(u'SSH端口', blank=True,null=True,default='22')
-    ssh_password = models.CharField(verbose_name=u"SSH密钥",max_length=100, blank=True)
+    name = models.CharField(verbose_name=u"主机名",max_length=64, blank=True,null=True)
+    ansible_name = models.CharField(verbose_name=u"ansible节点名",max_length=64,blank=True,default='ansible_host_name')
+    ssh_user = models.CharField(u'ssh用户',max_length=32,default='root')
+    ssh_host = models.GenericIPAddressField(u'SSH地址',help_text=u'一般填写外网IP',default='127.0.0.1')
+    ssh_port = models.IntegerField(u'SSH端口', default='22')
+    ssh_password = models.CharField(verbose_name=u"SSH密码",max_length=100)
     ipmitool = models.GenericIPAddressField(u'远控IP', blank=True,null=True)
     # #如果是虚拟机 那么他的宿主机是这个
     parent = models.ForeignKey('self',related_name='parent_server',blank=True,null=True,verbose_name=u"虚拟机父主机")
@@ -202,15 +204,15 @@ class Server(models.Model):
     (0, u"未安装系统"),
     (1, u"已安装系统"),
     )
-    system_status = models.IntegerField(verbose_name=u"系统状态", choices=SERVER_STATUS,blank=True,null=True)
+    system_status = models.IntegerField(verbose_name=u"系统状态",default=1, choices=SERVER_STATUS,blank=True,null=True)
     SYSTEM_OS = [(i, i) for i in (u"Linux", u"Windows","unix")]
-    os_type  = models.CharField(u"系统类型", max_length=32, choices=SYSTEM_OS, blank=True,null=True)
+    os_type  = models.CharField(u"系统类型", max_length=32, default="Linux", blank=True,null=True)
     SYSTEM_VERSION = [(i, i) for i in (u"CentOS",u"Ubuntu",u"Windows Server")]
-    os_version =models.CharField(u'系统版本',max_length=64, choices=SYSTEM_VERSION,blank=True,null=True)
+    os_version =models.CharField(u'系统版本',max_length=64, default="CentOS",blank=True,null=True)
     SYSTEM_RELEASE = [(i, i) for i in ("5","6","7","12.04","14.04","16.04","2003","2008","2012","2016")]
-    os_release  = models.CharField(u'系统版本号',max_length=64,choices=SYSTEM_RELEASE, blank=True,null=True)
+    os_release  = models.CharField(u'系统版本号',max_length=64,default='7', blank=True,null=True)
     SYSTEM_KERNEL = [(i, i) for i in ("2.6.32","3.2.82","3.4.112","3.10.103","3.12.64","3.16.37","3.18.43","4.1.34","4.4.25","4.7.8","4.8.2")]
-    os_kernel = models.CharField(u'系统内核',max_length=128,choices=SYSTEM_KERNEL,null=True, blank=True )
+    os_kernel = models.CharField(u'系统内核',max_length=128,default='3.2.82',null=True, blank=True )
     Raid_level = models.CharField(u'冗余级别',max_length=8,null=True, blank=True )
     Disk_total = models.CharField(u'硬盘总容量(GB)',max_length=8,null=True, blank=True )
     RAM_total = models.CharField(u'内存总容量(GB)',max_length=8,null=True, blank=True )
@@ -224,6 +226,8 @@ class Server(models.Model):
     # 虚拟机vps需要写环境，例如阿里云
     ENVIRONMENT = [(i, i) for i in (u"aliyun", u"aws", u"Tencent", u"pub")]
     env = models.CharField(max_length=32, blank=True, null=True, verbose_name=u"系统环境", choices=ENVIRONMENT)
+    old_ip = models.CharField(u'曾用IP',max_length=128,null=True, blank=True )
+
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(blank=True,auto_now=True)
     class Meta:
@@ -368,3 +372,31 @@ class  Tags(models.Model):
     class Meta:
         verbose_name = '资产Tag'
         verbose_name_plural = verbose_name
+
+
+class sqlpasswd(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    title = models.CharField(verbose_name='应用版本',max_length=32,blank=True)
+    listen = models.GenericIPAddressField(u'HOST', blank=True,null=True)
+    port = models.CharField(verbose_name='PORT',max_length=8,blank=True,default='3306')
+    user = models.CharField(verbose_name='USER',max_length=32,blank=True,default='root')
+    dbname = models.CharField(verbose_name='DBNAME',max_length=32,blank=True)
+    password = models.CharField(verbose_name='PASSWORD',max_length=32,blank=True)
+    server = models.ForeignKey('Server',blank=True,null=True)
+    memo = models.TextField(u'备注', blank=True,null=True)
+
+## 系统初始化
+class publickey(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(verbose_name='名称',max_length=32)
+    pubkey = models.TextField(u'公钥', blank=True)
+
+class zabbixagent(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(verbose_name='名称',max_length=32)
+    ZABBIX_VERSION = [(i, i) for i in (u"2.4", u"3.0","3.2")]
+    version = models.CharField(verbose_name='版本',max_length=32,choices=ZABBIX_VERSION)
+    server = models.GenericIPAddressField(u'Server',blank=True,null=True)
+    listenport = models.CharField(u'ListenPort',max_length=32)
+    listenip = models.CharField(u'ListenIP',max_length=32)
+    serveractive = models.GenericIPAddressField(u'ServerActive',blank=True,null=True)

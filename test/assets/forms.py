@@ -15,18 +15,18 @@ class AssetForm(ModelForm):
         ('contain', u'Docker'),
         ('others', u'其它类'),
     )
-    asset_number = forms.CharField(label=u'资产编号',widget=forms.TextInput(attrs={'placeholder': 'DT-server-20161014-001'}))
+    asset_number = forms.CharField(label=u'资产编号',required=False,widget=forms.TextInput(attrs={'placeholder': 'DT-server-20161014-001'}))
     asset_type = forms.CharField(label=u'资产类型',required=False,widget=forms.Select(attrs={'initial': 'serverhost','hidden': "hidden"}, choices=FAVORITE_COLORS_CHOICES))
     class Meta:
         model = models.Asset
         fields = '__all__'
 
 class ServerForm(ModelForm):
-    ssh_password = forms.CharField(label=u'SHH密钥',required=False,widget=forms.PasswordInput)
+    # ssh_password = forms.CharField(label=u'SHH密码',required=False,widget=forms.PasswordInput)
     class Meta:
         model = models.Server
-        fields = ['name','ipmitool','ssh_host','ssh_port','ssh_password','parent','Raid_level','Disk_total','RAM_total','project','service','model','env',
-                'os_kernel','Raid_level','system_status','os_type','os_version','os_release','server_sn','Services_Code','idc','cabinet','server_cabinet_id']
+        fields = ['name','ansible_name','ipmitool','ssh_user','ssh_host','ssh_port','ssh_password','parent','Raid_level','Disk_total','RAM_total','project','service','model','env',
+                'os_kernel','Raid_level','system_status','os_type','os_version','os_release','server_sn','Services_Code','idc','cabinet','server_cabinet_id','old_ip']
 
 
 
@@ -56,3 +56,10 @@ class RaidForm(ModelForm):
     class Meta:
         model = models.RaidAdaptor
         fields = ["model","sn","slot","memo"]
+
+class SQLpassForm(ModelForm):
+    title = forms.CharField(label=u'应用版本',widget=forms.TextInput(attrs={'placeholder': 'mysql-5.6.0 or redis-2.3'}))
+    listen = forms.CharField(label=u'监听地址',widget=forms.TextInput(attrs={'placeholder': '0.0.0.0'}))
+    class Meta:
+        model = models.sqlpasswd
+        fields = '__all__'
